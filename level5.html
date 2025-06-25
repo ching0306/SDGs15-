@@ -1,0 +1,251 @@
+<!-- level5.html | 第5關：生態拼圖挑戰 -->
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>第5關：生態拼圖挑戰</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0; height: 100%;
+      font-family: "Segoe UI", sans-serif;
+      background: url('assets/forest2-background.png') no-repeat center center fixed;
+      background-size: cover;
+      color: #2e7d32;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .container {
+      width: 950px;
+      height: 700px;
+      background: rgba(255,255,255,0.5);
+      backdrop-filter: blur(8px);
+      border-radius: 16px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      user-select: none;
+      position: relative;
+    }
+    h1, .instructions {
+      color: #2e7d32;
+      margin: 8px 0;
+    }
+    #content {
+      display: flex;
+      gap: 30px;
+      align-items: center;
+      justify-content: center;
+      height: 600px;
+      width: 100%;
+    }
+    #reference {
+      width: 450px;
+      height: 600px;
+      background: white;
+      border: 4px solid #2e7d32;
+      background-image: url('assets/puzzle.png');
+      background-size: 450px 600px;
+      background-position: center;
+      border-radius: 12px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      flex-shrink: 0;
+    }
+    #puzzle {
+      width: 450px;
+      height: 600px;
+      border: 4px solid #2e7d32;
+      background: white;
+      display: flex;
+      flex-wrap: wrap;
+      position: relative;
+      border-radius: 12px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      flex-shrink: 0;
+    }
+    .piece {
+      width: 150px;
+      height: 150px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      background-image: url('assets/puzzle.png');
+      background-size: 450px 600px;
+      cursor: grab;
+    }
+    .piece:active {
+      cursor: grabbing;
+      opacity: 0.8;
+    }
+    .success-msg {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255,255,255,0.95);
+      padding: 30px 40px;
+      border-radius: 12px;
+      font-size: 1.5em;
+      color: #2e7d32;
+      display: none;
+      z-index: 10;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0,0,0,.2);
+      user-select: none;
+    }
+    .success-btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #2e7d32;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1em;
+      text-decoration: none;
+      display: inline-block;
+      user-select: none;
+    }
+    .success-btn:hover {
+      background: #145214;
+    }
+    /* 新增靜音鍵與回首頁鍵樣式 */
+    #muteBtn5, #homeBtn5 {
+      position: fixed;
+      top: 20px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.5);
+      border: none;
+      font-size: 1.2em;
+      cursor: pointer;
+      user-select: none;
+      box-shadow: 0 0 6px rgba(0,0,0,0.15);
+      transition: background 0.3s;
+      z-index: 1000;
+    }
+    #muteBtn5:hover, #homeBtn5:hover {
+      background: rgba(255,255,255,0.75);
+    }
+    #muteBtn5 {
+      right: 20px;
+      width: 120px; /* 跟其他按鈕大小一致 */
+    }
+    #homeBtn5 {
+      left: 20px;
+      width: 120px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <audio id="bgMusic" src="assets/bg-music.mp3" loop preload="auto"></audio>
+
+  <!-- 新增回首頁與靜音鍵 -->
+  <button id="homeBtn5" title="回首頁">回首頁</button>
+  <button id="muteBtn5" title="靜音切換">🔊音樂</button>
+
+  <div class="container" id="gameContainer">
+    <h1>🧩 拼圖規則</h1>
+    <div class="instructions">將右側拼圖拖曳還原成左側參考圖，完成即通關！</div>
+    <div id="content">
+      <div id="reference"></div>
+      <div id="puzzle"></div>
+    </div>
+    <div class="success-msg" id="successMsg">
+      🎉 完成拼圖！<br />
+      <a href="index.html" class="success-btn">回首頁</a>
+      <a href="level5.html" class="success-btn">再來一次</a>
+    </div>
+  </div>
+
+  <script>
+    const bgMusic = document.getElementById('bgMusic');
+    const muteBtn = document.getElementById('muteBtn5');
+    const homeBtn = document.getElementById('homeBtn5');
+
+    document.body.addEventListener('click', () => {
+      if (bgMusic.paused) {
+        bgMusic.volume = 0.4;
+        bgMusic.play().catch(() => {});
+      }
+    }, { once: true });
+
+    muteBtn.onclick = () => {
+      bgMusic.muted = !bgMusic.muted;
+      muteBtn.textContent = bgMusic.muted ? "🔈 靜音" : "🔊 音樂";
+    };
+
+    homeBtn.onclick = () => {
+      location.href = "index.html";
+    };
+
+    const puzzle = document.getElementById("puzzle");
+    const successMsg = document.getElementById("successMsg");
+    const rows = 4;
+    const cols = 3;
+    const pieces = [];
+
+    // 產生拼圖塊
+    for(let row=0; row<rows; row++){
+      for(let col=0; col<cols; col++){
+        const piece = document.createElement('div');
+        piece.className = 'piece';
+        piece.style.backgroundPosition = `-${col * 150}px -${row * 150}px`;
+        piece.dataset.correct = `${row}-${col}`;
+        pieces.push(piece);
+      }
+    }
+
+    // 隨機排列拼圖塊
+    function shuffleArray(arr){
+      for(let i=arr.length -1; i>0; i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+    shuffleArray(pieces);
+
+    pieces.forEach(p => {
+      p.draggable = true;
+      puzzle.appendChild(p);
+    });
+
+    let dragged = null;
+
+    puzzle.addEventListener('dragstart', e => {
+      dragged = e.target;
+    });
+
+    puzzle.addEventListener('dragover', e => {
+      e.preventDefault();
+    });
+
+    puzzle.addEventListener('drop', e => {
+      if(e.target.classList.contains('piece') && e.target !== dragged){
+        // 用暫時節點交換兩個拼圖位置
+        const temp = document.createElement('div');
+        puzzle.replaceChild(temp, dragged);
+        puzzle.replaceChild(dragged, e.target);
+        puzzle.replaceChild(e.target, temp);
+
+        checkCompletion();
+      }
+    });
+
+    function checkCompletion(){
+      const children = Array.from(puzzle.children);
+      const correct = children.every((p, i) => {
+        const row = Math.floor(i / cols);
+        const col = i % cols;
+        return p.dataset.correct === `${row}-${col}`;
+      });
+      if(correct){
+        successMsg.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>

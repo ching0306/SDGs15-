@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>第4關：防治外來種</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0; height: 100%;
+      font-family: "Segoe UI", sans-serif;
+      background: url('assets/background forest2.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: #2e7d32;
+      display: flex; justify-content: center; align-items: center;
+    }
+    .container {
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 40px;
+      width: 90%;
+      max-width: 800px;
+      box-shadow: 0 0 16px rgba(0,0,0,0.2);
+      color: #2e7d32;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 0;
+    }
+    .rules {
+      background: rgba(255, 255, 255, 0.7);
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 1em;
+      text-align: center;
+      color: #1b5e20;
+      user-select: none;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    .info-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    .timer {
+      color: #d32f2f;
+    }
+    .question {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+    }
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .option {
+      background: #e8f5e9;
+      border: 2px solid #c8e6c9;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.3s;
+    }
+    .option:hover {
+      background: #c8e6c9;
+    }
+    .result {
+      text-align: center;
+      display: none;
+      margin-top: 30px;
+    }
+    .result button {
+      margin: 8px 12px;
+      padding: 10px 20px;
+      font-size: 1em;
+      border: none;
+      border-radius: 8px;
+      background: #2e7d32;
+      color: white;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.3s;
+    }
+    .result button:hover {
+      background: #1b4d20;
+    }
+    .audio-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(255,255,255,0.5);
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.2em;
+      user-select: none;
+      transition: background 0.3s;
+      z-index: 1000;
+    }
+    .audio-btn:hover {
+      background: rgba(255,255,255,0.75);
+    }
+    /* 回首頁按鈕 */
+    .home-btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: rgba(255,255,255,0.5);
+      color: #2e7d32;
+      padding: 10px 16px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 1.1em;
+      user-select: none;
+      transition: background 0.3s;
+      z-index: 1000;
+    }
+    .home-btn:hover {
+      background: rgba(255,255,255,0.75);
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="home-btn" title="回首頁">🏠 回首頁</a>
+
+  <audio id="bgMusic4" src="assets/bg-music.mp3" loop preload="auto"></audio>
+
+  <button id="muteBtn4" class="audio-btn">🔊 音樂</button>
+
+  <div class="container">
+    <h1>第4關：防治外來種</h1>
+    <div class="rules">點擊正確答案，每題限時 10 秒，答對 10 題（100 分）即可通關！超時視為答錯，自動切換下一題。</div>
+
+    <div class="info-bar">
+      <div id="score">分數：0</div>
+      <div id="progress">第 1 / 15 題</div>
+      <div class="timer">⏱️ <span id="timer">10</span> 秒</div>
+    </div>
+    <div class="question" id="question"></div>
+    <div class="options" id="options"></div>
+
+    <div class="result" id="result">
+      <h2 id="resultMsg"></h2>
+      <div id="resultButtons"></div>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      { question: "以下哪一項是外來種？", options: ["梅花鹿", "小花蔓澤蘭", "台灣藍鵲", "台灣黑熊"], answer: 1 },
+      { question: "福壽螺會造成什麼問題？", options: ["水質變好", "稻田被破壞", "防止土壤流失", "幫助農作"], answer: 1 },
+      { question: "下列哪一項不是防治外來種的方法？", options: ["放生外來動物", "控制數量", "立法禁止", "教育宣導"], answer: 0 },
+      { question: "何者屬於外來植物？", options: ["九重葛", "香附子", "銀合歡", "野薑花"], answer: 2 },
+      { question: "誰負責監測外來種？", options: ["教育部", "國防部", "環境部", "交通部"], answer: 2 },
+      { question: "外來種為何危險？", options: ["幫助生態", "促進繁殖", "破壞原生生物", "讓空氣變乾淨"], answer: 2 },
+      { question: "小花蔓澤蘭有什麼危害？", options: ["裝飾用", "遮陰涼快", "纏繞植物導致死亡", "製作藥材"], answer: 2 },
+      { question: "外來種可能怎麼進來？", options: ["自然遷移", "風災", "人為引進", "颱風"], answer: 2 },
+      { question: "紅耳龜為什麼是問題？", options: ["很可愛", "壽命短", "繁殖快且排擠原生龜", "會飛"], answer: 2 },
+      { question: "外來種影響哪些層面？", options: ["經濟、生態", "只有健康", "只有農業", "只有生物"], answer: 0 },
+      { question: "水龍骨屬於哪類植物？", options: ["原生種", "外來種", "特有種", "保育類"], answer: 1 },
+      { question: "外來種入侵會導致什麼後果？", options: ["多樣性提升", "食物鏈失衡", "水質改善", "空氣清新"], answer: 1 },
+      { question: "銀合歡對農地的影響為何？", options: ["促進生長", "增加產量", "排擠作物", "無影響"], answer: 2 },
+      { question: "什麼是生物入侵？", options: ["本土物種擴張", "人類移民", "外來物種定殖並擴張", "氣候變遷"], answer: 2 },
+      { question: "紅火蟻對人類有什麼危害？", options: ["會咬人且過敏", "裝飾用途", "沒有危害", "幫助授粉"], answer: 0 },
+      { question: "哪種不是外來動物？", options: ["綠鬣蜥", "白鼻心", "美洲牛蛙", "福壽螺"], answer: 1 },
+      { question: "如何避免外來種傳播？", options: ["隨意丟棄", "帶回國外", "正確棄置與教育", "偷偷放生"], answer: 2 },
+      { question: "綠鬣蜥常見在哪？", options: ["台北市", "高雄與屏東", "花蓮", "離島"], answer: 1 },
+      { question: "外來種的生存優勢為？", options: ["適應力強", "較小體型", "不吃食物", "不需水"], answer: 0 },
+      { question: "何者為外來種控制措施？", options: ["增加棲地", "繁殖", "人工移除", "引入其他外來種"], answer: 2 },
+      { question: "外來種防治的第一步是什麼？", options: ["立法", "放生", "辨識與通報", "採樣"], answer: 2 },
+      { question: "鯉魚屬於哪類？", options: ["外來種魚類", "特有種", "保育類", "哺乳類"], answer: 0 },
+      { question: "在國家公園釋放外來種會？", options: ["幫助生態", "破壞原生環境", "促進繁殖", "改善水質"], answer: 1 },
+      { question: "哪種外來植物會大量吸水？", options: ["水燭", "布袋蓮", "香附子", "水草"], answer: 1 },
+      { question: "外來種的傳播媒介可能是？", options: ["寵物走失", "貨櫃與包裹", "觀賞魚放生", "以上皆是"], answer: 3 },
+      { question: "為何不能隨意放生？", options: ["浪費錢", "會污染水源", "造成外來種入侵", "沒關係"], answer: 2 },
+      { question: "外來種管理法由哪個單位負責？", options: ["交通部", "農業部", "文化部", "科技部"], answer: 1 },
+      { question: "巴西龜的問題在於？", options: ["太大隻", "攻擊人類", "競爭原生龜類棲地", "不會游泳"], answer: 2 },
+      { question: "外來種對農業的危害？", options: ["提高產量", "防止害蟲", "破壞農作物", "促進銷售"], answer: 2 },
+      { question: "民眾如何協助防治？", options: ["餵食外來種", "通報政府與不放生", "擴散繁殖", "忽略問題"], answer: 1 },
+    ];
+
+    const selected = questions.sort(() => Math.random() - 0.5).slice(0, 15);
+    let current = 0, score = 0, timer;
+
+    function loadQuestion() {
+      clearInterval(timer);
+      if (current >= selected.length || score >= 100) return showResult();
+
+      document.getElementById("question").textContent = selected[current].question;
+      const optionsEl = document.getElementById("options");
+      optionsEl.innerHTML = "";
+      selected[current].options.forEach((opt, i) => {
+        const div = document.createElement("div");
+        div.textContent = opt;
+        div.className = "option";
+        div.onclick = () => checkAnswer(i);
+        optionsEl.appendChild(div);
+      });
+      document.getElementById("progress").textContent = `第 ${current + 1} / 15 題`;
+
+      let time = 10;
+      document.getElementById("timer").textContent = time;
+      timer = setInterval(() => {
+        time--;
+        document.getElementById("timer").textContent = time;
+        if (time <= 0) {
+          clearInterval(timer);
+          nextQuestion();
+        }
+      }, 1000);
+    }
+
+    function checkAnswer(i) {
+      clearInterval(timer);
+      if (i === selected[current].answer) score += 10;
+      document.getElementById("score").textContent = `分數：${score}`;
+      nextQuestion();
+    }
+
+    function nextQuestion() {
+      current++;
+      loadQuestion();
+    }
+
+    function showResult() {
+      document.getElementById("question").style.display = "none";
+      document.getElementById("options").style.display = "none";
+      document.getElementById("progress").style.display = "none";
+      document.getElementById("timer").textContent = "0";
+
+      const result = document.getElementById("result");
+      const btnContainer = document.getElementById("resultButtons");
+      document.getElementById("score").textContent = `總分：${score}`;
+      result.style.display = "block";
+
+      btnContainer.innerHTML = "";
+
+      if (score >= 100) {
+        document.getElementById("resultMsg").textContent = "🎉 恭喜你通過外來種防治關卡！";
+
+        btnContainer.innerHTML += `<button onclick="location.href='index.html'">回首頁</button>`;
+        btnContainer.innerHTML += `<button onclick="location.reload()">再來一次</button>`;
+        btnContainer.innerHTML += `<button onclick="location.href='level5.html'">前往下一關</button>`;
+      } else {
+        document.getElementById("resultMsg").textContent = "💡 挑戰失敗，再接再厲！";
+
+        btnContainer.innerHTML += `<button onclick="location.href='index.html'">回首頁</button>`;
+        btnContainer.innerHTML += `<button onclick="location.reload()">再來一次</button>`;
+      }
+    }
+
+    // 背景音樂控制
+    const music = document.getElementById("bgMusic4");
+    const muteBtn = document.getElementById("muteBtn4");
+    document.body.addEventListener("click", () => {
+      if (music.paused) {
+        music.volume = 0.4;
+        music.play().catch(() => {});
+      }
+    }, { once: true });
+    muteBtn.onclick = () => {
+      music.muted = !music.muted;
+      muteBtn.textContent = music.muted ? "🔈 靜音" : "🔊 音樂";
+    };
+
+    window.onload = loadQuestion;
+  </script>
+</body>
+</html>

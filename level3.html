@@ -1,0 +1,225 @@
+<!-- ========================= SDG15 Game Pages ========================= -->
+<!--
+  本文件包含多個 HTML 頁面範本：
+  ▸ index.html　　首頁
+  ▸ level1.html　第一關：種樹行動（已完成）
+  ▸ level2.html　第二關：阻止非法伐木（NEW）
+  ▸ level3.html　第三關：保護環境（撿垃圾遊戲）
+
+  建議將以下程式碼各自存成獨立檔案。
+-->
+
+<!-- =================================================================== -->
+<!-- level3.html | 第3關：保護環境（撿垃圾） -->
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>第3關：保護環境</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: "Segoe UI", sans-serif;
+      background: url('assets/clean-environment.jpg') no-repeat center center fixed;
+      background-size: cover;
+      overflow: hidden;
+      cursor: default;
+    }
+    #gameArea { position: relative; width: 100%; height: 100%; }
+
+    .trash {
+      position: absolute;
+      width: 64px;
+      cursor: pointer;
+      transition: transform 0.2s;
+      user-select: none;
+    }
+    .trash:hover {
+      transform: scale(1.1);
+    }
+
+    .ui-btn {
+      position: absolute;
+      background: rgba(0,0,0,.65);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      font-size: 1em;
+      cursor: pointer;
+      z-index: 999;
+      user-select: none;
+    }
+    .back-btn { top: 20px; left: 20px; }
+    .mute-btn { top: 60px; right: 20px; }
+
+    .scoreboard {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(255,255,255,.8);
+      color: #0277bd;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: bold;
+      z-index: 999;
+    }
+    .instructions {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,.85);
+      padding: 10px 24px;
+      border-radius: 8px;
+      color: #0277bd;
+      font-size: 1em;
+      white-space: nowrap;
+      z-index: 999;
+    }
+    .success-msg {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255,255,255,.9);
+      padding: 30px 40px;
+      border-radius: 12px;
+      font-size: 1.5em;
+      color: #0277bd;
+      display: none;
+      z-index: 1000;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0,0,0,.2);
+    }
+    .success-buttons {
+      margin-top: 24px;
+    }
+    .success-btn {
+      display: inline-block;
+      margin: 0 8px;
+      padding: 10px 20px;
+      background: #0277bd;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1em;
+      cursor: pointer;
+      text-decoration: none;
+      user-select: none;
+    }
+    .success-btn:hover {
+      background: #004c8c;
+    }
+  </style>
+</head>
+<body>
+  <audio id="bgMusic3" src="assets/bg-music3.mp3" loop preload="auto"></audio>
+
+  <div id="gameArea">
+    <a href="index.html" class="ui-btn back-btn">← 回首頁</a>
+    <button id="muteBtn3" class="ui-btn mute-btn">🔊 音樂</button>
+    <div class="scoreboard" id="scoreBoard3">分數：0</div>
+    <div class="instructions">🗑️ 點擊垃圾 +1~10 分，越大的加分越多，100 分通關！</div>
+
+    <div class="success-msg" id="successMsg3">
+      <p>🎉 恭喜你完成環境保護任務！</p>
+      <div class="success-buttons">
+        <a href="index.html" class="success-btn">回首頁</a>
+        <button class="success-btn" onclick="restartLevel3()">重新開始</button>
+        <a href="level4.html" class="success-btn">下一關 →</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SCORE_PER_TRASH = 10;
+    const TARGET_SCORE3 = 100;
+    const NUM_TRASH = 10;
+    const SAFE_DIST = 80;
+
+    const trashTypes = [
+      'assets/bottle.png',
+      'assets/box.png',
+      'assets/bag.png',
+      'assets/cup.png'
+    ];
+
+    let score3 = 0;
+
+    function tooClose(x1, y1, x2, y2) {
+      return Math.hypot(x1 - x2, y1 - y2) < SAFE_DIST;
+    }
+
+    function createTrash() {
+      const gameArea = document.getElementById('gameArea');
+      const W = gameArea.clientWidth, H = gameArea.clientHeight;
+      const placed = [];
+
+      document.querySelectorAll('.trash').forEach(t => t.remove());
+
+      for (let i = 0; i < NUM_TRASH; i++) {
+        let x, y, tries = 0;
+        do {
+          x = Math.random() * (W - 2 * SAFE_DIST) + SAFE_DIST;
+          y = Math.random() * (H - 2 * SAFE_DIST) + SAFE_DIST;
+          tries++;
+        } while (placed.some(p => tooClose(p.x, p.y, x, y)) && tries < 200);
+
+        placed.push({ x, y });
+
+        const trash = document.createElement('img');
+        trash.src = trashTypes[i % trashTypes.length];
+        trash.className = 'trash';
+        const size = Math.random() * 192 + 64; // 64~256 px
+        trash.style.width = `${size}px`;
+        trash.dataset.score = Math.max(1, Math.round(size / 256 * SCORE_PER_TRASH));
+        trash.style.left = x + 'px';
+        trash.style.top = y + 'px';
+        trash.style.transform = `rotate(${Math.random() * 360}deg)`;
+
+        trash.onclick = () => {
+          if (score3 < TARGET_SCORE3) {
+            score3 += parseInt(trash.dataset.score);
+            document.getElementById('scoreBoard3').textContent = `分數：${score3}`;
+            trash.remove();
+            if (score3 >= TARGET_SCORE3) {
+              document.getElementById('successMsg3').style.display = 'block';
+            }
+          }
+        };
+
+        gameArea.appendChild(trash);
+      }
+    }
+
+    function restartLevel3() {
+      location.reload();
+    }
+
+    function initAudio3() {
+      const music = document.getElementById('bgMusic3');
+      const btn = document.getElementById('muteBtn3');
+      document.body.addEventListener('click', () => {
+        if (music.paused) {
+          music.volume = 0.4;
+          music.play().catch(() => {});
+        }
+      }, { once: true });
+      btn.onclick = () => {
+        music.muted = !music.muted;
+        btn.textContent = music.muted ? '🔈 靜音' : '🔊 音樂';
+      };
+    }
+
+    window.onload = () => {
+      createTrash();
+      setInterval(createTrash, 5000);
+      initAudio3();
+    };
+  </script>
+</body>
+</html>

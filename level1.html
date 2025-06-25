@@ -1,0 +1,190 @@
+<!-- level1.html | 第1關：種樹行動 -->
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>第1關：種樹行動</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: "Segoe UI", sans-serif;
+      background: url('assets/soil-background.jpg') no-repeat center center fixed;
+      background-size: cover;
+      cursor: url('assets/tree.png'), auto;
+      overflow: hidden;
+    }
+    #gameArea {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+    .seedling {
+      position: absolute;
+      width: 96px;
+      height: 96px;
+      user-select: none;
+      pointer-events: none;
+    }
+    .scoreboard, .mute-btn, .home-btn {
+      position: absolute;
+      background: rgba(255,255,255,0.85);
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: bold;
+      color: #2e7d32;
+      font-size: 1em;
+      cursor: pointer;
+      z-index: 999;
+      user-select: none;
+      text-align: center;
+      border: none;
+      transition: background-color 0.3s;
+    }
+    .scoreboard {
+      top: 20px;
+      right: 20px;
+      width: 110px;
+    }
+    .mute-btn {
+      top: 70px;
+      right: 20px;
+      width: 110px;
+    }
+    .home-btn {
+      top: 20px;
+      left: 20px;
+      width: 110px;
+      text-decoration: none;
+      line-height: 1.2;
+    }
+    .scoreboard:hover, .mute-btn:hover, .home-btn:hover {
+      background: #c8e6c9;
+      color: #145214;
+    }
+    .instructions {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,0.85);
+      padding: 10px 24px;
+      border-radius: 8px;
+      color: #2e7d32;
+      font-size: 1em;
+      white-space: nowrap;
+      z-index: 999;
+    }
+    .success-msg {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255,255,255,.9);
+      padding: 30px 40px;
+      border-radius: 12px;
+      font-size: 1.5em;
+      color: #2e7d32;
+      display: none;
+      z-index: 1000;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0,0,0,.2);
+    }
+    .success-buttons {
+      margin-top: 24px;
+    }
+    .success-btn {
+      display: inline-block;
+      margin: 0 8px;
+      padding: 10px 20px;
+      background: #2e7d32;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1em;
+      cursor: pointer;
+      text-decoration: none;
+      user-select: none;
+    }
+    .success-btn:hover {
+      background: #145214;
+    }
+  </style>
+</head>
+<body>
+  <audio id="bgMusic1" src="assets/bg-music1.mp3" loop preload="auto"></audio>
+
+  <div id="gameArea">
+    <a href="index.html" class="home-btn" title="回首頁">← 回首頁</a>
+    <div class="scoreboard" id="scoreBoard1">分數：0</div>
+    <button class="mute-btn" onclick="toggleMute()">🔈 靜音</button>
+    <div class="instructions">🪴 點擊泥土種樹，種一棵樹 +10 分，100 分通關！</div>
+    <div class="success-msg" id="successMsg1">
+      <p>🎉 恭喜你完成種樹任務！</p>
+      <div class="success-buttons">
+        <a href="index.html" class="success-btn">回首頁</a>
+        <button class="success-btn" onclick="restartLevel1()">重新開始</button>
+        <a href="level2.html" class="success-btn">下一關 →</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const TARGET_SCORE1 = 100;
+    const SEEDLING_SIZE = 96;
+    const SAFE_MARGIN = 50;
+    let score1 = 0;
+
+    function createSeedling(x, y) {
+      const seedling = document.createElement('img');
+      seedling.src = 'assets/planted-tree.png';
+      seedling.className = 'seedling';
+      seedling.style.left = `${x}px`;
+      seedling.style.top = `${y}px`;
+      document.getElementById('gameArea').appendChild(seedling);
+    }
+
+    function restartLevel1() {
+      location.reload();
+    }
+
+    function initAudio1() {
+      const music = document.getElementById('bgMusic1');
+      document.body.addEventListener('click', () => {
+        if (music.paused) {
+          music.volume = 0.4;
+          music.play().catch(() => {});
+        }
+      }, { once: true });
+    }
+
+    function toggleMute() {
+      const music = document.getElementById('bgMusic1');
+      const btn = document.querySelector('.mute-btn');
+      music.muted = !music.muted;
+      btn.textContent = music.muted ? '🔇 開啟音樂' : '🔈 靜音';
+    }
+
+    window.onload = () => {
+      initAudio1();
+      const gameArea = document.getElementById('gameArea');
+      gameArea.onclick = (e) => {
+        if (score1 >= TARGET_SCORE1) return;
+        const rect = gameArea.getBoundingClientRect();
+        const x = e.clientX - rect.left - SEEDLING_SIZE / 2;
+        const y = e.clientY - rect.top - SEEDLING_SIZE / 2;
+        if (x < SAFE_MARGIN || x > rect.width - SAFE_MARGIN - SEEDLING_SIZE ||
+            y < SAFE_MARGIN || y > rect.height - SAFE_MARGIN - SEEDLING_SIZE) return;
+        createSeedling(x, y);
+        score1 += 10;
+        document.getElementById('scoreBoard1').textContent = `分數：${score1}`;
+        if (score1 >= TARGET_SCORE1) {
+          document.getElementById('successMsg1').style.display = 'block';
+        }
+      };
+    };
+  </script>
+</body>
+</html>

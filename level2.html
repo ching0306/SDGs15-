@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>第2關：阻止非法伐木</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: "Segoe UI", sans-serif;
+      background: url('assets/forest.jpg') no-repeat center center fixed;
+      background-size: cover;
+      overflow: hidden;
+    }
+    #gameArea {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+    .scoreboard, .mute-btn, .home-btn {
+      position: absolute;
+      background: rgba(255,255,255,0.85);
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: bold;
+      color: #2e7d32;
+      font-size: 1em;
+      cursor: pointer;
+      z-index: 999;
+      user-select: none;
+      text-align: center;
+      border: none;
+      transition: background-color 0.3s;
+    }
+    .scoreboard {
+      top: 20px;
+      right: 20px;
+      width: 110px;
+    }
+    .mute-btn {
+      top: 70px;
+      right: 20px;
+      width: 110px;
+    }
+    .home-btn {
+      top: 20px;
+      left: 20px;
+      width: 110px;
+      text-decoration: none;
+      line-height: 1.2;
+    }
+    .scoreboard:hover, .mute-btn:hover, .home-btn:hover {
+      background: #c8e6c9;
+      color: #145214;
+    }
+    .instructions {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,0.85);
+      padding: 10px 24px;
+      border-radius: 8px;
+      color: #2e7d32;
+      font-size: 1em;
+      white-space: nowrap;
+      z-index: 999;
+    }
+    .character {
+      position: absolute;
+      cursor: pointer;
+    }
+    .logger {
+      width: 128px;
+      height: 128px;
+    }
+    .rabbit {
+      width: 96px;
+      height: 96px;
+    }
+    .success-msg {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255,255,255,.95);
+      padding: 30px 40px;
+      border-radius: 12px;
+      font-size: 1.5em;
+      color: #2e7d32;
+      display: none;
+      z-index: 1000;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0,0,0,.2);
+    }
+    .success-btn {
+      margin: 0 8px;
+      padding: 10px 20px;
+      background: #2e7d32;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1em;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .success-btn:hover {
+      background: #145214;
+    }
+  </style>
+</head>
+<body>
+  <audio id="bgMusic2" src="assets/bg-music.mp3" loop preload="auto"></audio>
+  <div id="gameArea">
+    <div class="scoreboard" id="scoreBoard2">分數：0</div>
+    <button class="mute-btn" onclick="toggleMute()">🔈 靜音</button>
+    <a href="index.html" class="home-btn" title="回首頁">← 回首頁</a>
+    <div class="instructions">🚫 點擊非法伐木者獲得10分，誤點兔子扣15分，100分通關！</div>
+    <div class="success-msg" id="successMsg2">
+      🎉 通關成功！<br /><br />
+      <a href="index.html" class="success-btn">回首頁</a>
+      <a href="level2.html" class="success-btn">再來一次</a>
+      <a href="level3.html" class="success-btn">下一關 →</a>
+    </div>
+  </div>
+
+  <script>
+    const TARGET_SCORE2 = 100;
+    const SAFE_MARGIN = 50;
+    let score2 = 0;
+    let gameArea = document.getElementById('gameArea');
+
+    function initAudio2() {
+      const music = document.getElementById('bgMusic2');
+      function resumeMusic() {
+        if (music.paused) {
+          music.volume = 0.4;
+          music.play().catch(() => {});
+        }
+      }
+      document.body.addEventListener('click', resumeMusic, { once: true });
+      document.body.addEventListener('keydown', resumeMusic, { once: true });
+    }
+
+    function toggleMute() {
+      const music = document.getElementById('bgMusic2');
+      const btn = document.querySelector('.mute-btn');
+      music.muted = !music.muted;
+      btn.textContent = music.muted ? '🔇 開啟音樂' : '🔈 靜音';
+    }
+
+    function randomPosition(size) {
+      const W = gameArea.clientWidth;
+      const H = gameArea.clientHeight;
+      // x 範圍：SAFE_MARGIN ~ (W - size - SAFE_MARGIN)
+      const x = Math.random() * (W - size - SAFE_MARGIN * 2) + SAFE_MARGIN;
+      // y 範圍：畫面下半部且保留邊距
+      const y = Math.random() * ((H / 2) - size - SAFE_MARGIN * 2) + (H / 2 + SAFE_MARGIN);
+      return { x, y };
+    }
+
+    function createCharacter(type) {
+      const img = document.createElement('img');
+      img.src = `assets/${type}.png`;
+      img.className = `character ${type}`;
+      const size = type === 'rabbit' ? 96 : 128;
+      const { x, y } = randomPosition(size);
+      img.style.left = `${x}px`;
+      img.style.top = `${y}px`;
+      img.style.zIndex = Math.floor(y);
+      img.dataset.type = type;
+      img.onclick = () => {
+        if (img.dataset.clicked === 'true') return;
+        img.dataset.clicked = 'true';
+        if (type === 'logger') {
+          img.src = 'assets/stopped-logger.png';
+          score2 += 10;
+        } else if (type === 'rabbit') {
+          score2 -= 15;
+          img.remove();
+        }
+        updateScore();
+      };
+      gameArea.appendChild(img);
+    }
+
+    function updateScore() {
+      document.getElementById('scoreBoard2').textContent = `分數：${score2}`;
+      if (score2 >= TARGET_SCORE2) {
+        document.getElementById('successMsg2').style.display = 'block';
+      }
+    }
+
+    function refreshCharacters() {
+      document.querySelectorAll('.character').forEach(el => el.remove());
+      const positions = [];
+
+      for (let i = 0; i < 5; i++) {
+        let pos, overlap;
+        do {
+          overlap = false;
+          pos = randomPosition(128);
+          for (let p of positions) {
+            const dx = p.x - pos.x;
+            const dy = p.y - pos.y;
+            if (Math.abs(dx) < 128 && Math.abs(dy) < 128) {
+              overlap = true;
+              break;
+            }
+          }
+        } while (overlap);
+        positions.push(pos);
+        createCharacter('logger');
+      }
+      for (let i = 0; i < 3; i++) {
+        let pos, overlap;
+        do {
+          overlap = false;
+          pos = randomPosition(96);
+          for (let p of positions) {
+            const dx = p.x - pos.x;
+            const dy = p.y - pos.y;
+            if (Math.abs(dx) < 96 && Math.abs(dy) < 96) {
+              overlap = true;
+              break;
+            }
+          }
+        } while (overlap);
+        positions.push(pos);
+        createCharacter('rabbit');
+      }
+    }
+
+    window.onload = () => {
+      initAudio2();
+      refreshCharacters();
+      setInterval(refreshCharacters, 10000);
+    };
+  </script>
+</body>
+</html>
